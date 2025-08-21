@@ -82,7 +82,7 @@ int compare_input_mask(uint8_t inputmask[], row row) {
 // if A: input
 //    B: bitmask1
 //    C: bitmask0
-//    then A'BC + A'B'C' = 0 will give the next state to go to
+//    then (AB + A'C')' = 0 will give the next state to go to
 void sigstophandler(int signo, siginfo_t *info, void *context) {
         if (signo == SIGTSTP) {
                         flag = 1;

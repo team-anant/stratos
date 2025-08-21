@@ -16,14 +16,14 @@ A state actor represents a mode in the flight plan. A mode represents the set of
 ---
 The decision to switch to the next mode is taken by the parent based on the state table. The state table consists of multiple rows containing the current state, inputs (represented through an input bitmask) and the next state.
 ##### Input Bitmask
-The input bitmask consists of an array of cells. Each cell can either be a 0, 1 or X (Don't care). This array is used by the parent to switch to the next state. For example, let a machine be in state A, which will switch to state B if its input mask is of the form 1X0X. Now, if our current inputs were represented by 1100, 1101, 1001 or 1000, then we would switch to state B. To implement the X symbol, we use 2 binary bitmasks. These are named bitmask1 and bitmask0. All the X are replaced by 1 in bitmask1 and by 0 in bitmask0. Then in order to check for equality between our input and the input mask, we use the formula : `~(AB + BC + CA) = 0` , where
+The input bitmask consists of an array of cells. Each cell can either be a 0, 1 or X (Don't care). This array is used by the parent to switch to the next state. For example, let a machine be in state A, which will switch to state B if its input mask is of the form 1X0X. Now, if our current inputs were represented by 1100, 1101, 1001 or 1000, then we would switch to state B. To implement the X symbol, we use 2 binary bitmasks. These are named bitmask1 and bitmask0. All the X are replaced by 1 in bitmask1 and by 0 in bitmask0. Then in order to check for equality between our input and the input mask, we use the formula : `(AB + A'C')'` , where
 - A represents the inputs as a binary bitmask
-- B is bitmask1 and
+- B is bitmask1 and'
 - C is bitmask0.
 In the example given above, 1X0X is represented by
 - bitmask1 = 1101 and
 - bitmask0 = 1000
-Now if our input is A = 1100, 1101, 1001 or 1000, then the value of `~(AB + BC + CA)` will be `0`
+Now if our input is A = 1100, 1101, 1001 or 1000, then the value of `(AB + A'C')'` will be `0`
 The following table represents the state table for the Gimbal project (LSB signifies SPI input).
 
 | Current State | Input Bitmask | Next State |
@@ -199,13 +199,13 @@ int init_modes() {
 #### **Input Mask Comparison**
 ```c
 int compare_input_mask(uint8_t inputmask[], row row) {
-    for (int i = 0; i < NO_OF_GROUPS; i++) {
-        if (~((inputmask[i] & row.bitmask1[i]) | (inputmask[i] & row.bitmask0[i]) | (row.bitmask1[i] & row.bitmask0[i]))) {
-            return 0;
+        for (int i = 0; i < NO_OF_GROUPS; i++) {
+                if (~((inputmask[i] & row.bitmask1[i]) | (~inputmask[i] & ~row.bitmask0[i]))) {
+                        return 0;
+                }
         }
-    }
-    return 1;
-}
+        return 1;
+}}
 ```
 - Compares the input mask against the provided row's bitmask and returns `1` if they match, otherwise `0`.
 
