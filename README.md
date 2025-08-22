@@ -170,12 +170,13 @@ state *next_state;
 #### **Row and Mode Initialization**
 
 1. **Add Row Function**
+> Update: Previously, we used `static int index` to increment group and row. In the call to `add_row()`, head would be indexed by `index / NO_OF_GROUPS` which allows for group updation at every call, and row updation every two calls. Changed to direct indexes `row_no` and `group_no` for clarity.
 ```c
 int add_row(row *head, uint8_t bitmask1, uint8_t bitmask0, int group_no, state *next_state) {
-    static int index;
-    head[index / NO_OF_GROUPS].bitmask1[group_no] = bitmask1;
-    head[index / NO_OF_GROUPS].bitmask0[group_no] = bitmask0;
-    head[index++ / NO_OF_GROUPS].next_state = next_state;
+    // static int index;
+    head[row_no].bitmask1[group_no] = bitmask1;
+    head[row_no].bitmask0[group_no] = bitmask0;
+    head[row_no].next_state = next_state;
     return 0;
 }
 ```

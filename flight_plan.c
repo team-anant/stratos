@@ -54,7 +54,7 @@ state *next_state;
 // add a row to the state table for a particular state
 int add_row(row *head, uint8_t bitmask1, uint8_t bitmask0, int group_no, int row_no,
             state *next_state) {
-        static int index;
+        // static int index;
         head[row_no].bitmask1[group_no] = bitmask1;
         head[row_no].bitmask0[group_no] = bitmask0;
         head[row_no].next_state = next_state;
