@@ -139,8 +139,8 @@ struct row {
   - **length**: Number of rows in the state.
 
 - **row**: Represents a row in the state table with:
-  - **bitmask1**: Bitmask for active bits in group 1.
-  - **bitmask0**: Bitmask for active bits in group 0.
+  - **bitmask1**: Bitmask for figuring out the active bits in group 1 and 0 that replaces all values of x with 1.
+  - **bitmask0**: Bitmask for figuring out the active bits in group 1 and 0 that replaces all values of x with 0.
   - **next_state**: Pointer to the next state in the machine.
 
 ---
