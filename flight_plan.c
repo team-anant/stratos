@@ -287,6 +287,9 @@ int main() {
                 init_modes();
                 int status;
                 struct sigaction act;
+                sigset_t mask;
+                sigemptyset(&mask);
+                act.sa_mask = mask;
                 act.sa_sigaction = sigusrhandler;
                 act.sa_flags = SA_SIGINFO;
                 if (sigaction(SIGUSR1, &act, NULL) < 0) {
@@ -313,9 +316,7 @@ int main() {
                         current_state = (next_state = &rotate_state);
                 }
                 kill(spi_id, SIGCONT);
-                sigset_t mask;
-                sigemptyset(&mask);
-                sigaddset(&mask, SIGCLD);
+                
                 for (;;) {
                         pause();
                 }
