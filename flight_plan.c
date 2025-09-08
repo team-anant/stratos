@@ -72,7 +72,7 @@ int init_modes() {
 
 int compare_input_mask(uint8_t inputmask[], row row) {
         for (int i = 0; i < NO_OF_GROUPS; i++) {
-                if (~((inputmask[i] & row.bitmask1[i]) | (~inputmask[i] & ~row.bitmask0[i]))) {
+                if (~((uint8_t)(inputmask[i] & row.bitmask1[i]) | (uint8_t)(~inputmask[i] & ~row.bitmask0[i]))) {
                         return 0;
                 }
         }
