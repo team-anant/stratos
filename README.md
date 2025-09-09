@@ -18,7 +18,7 @@ The decision to switch to the next mode is taken by the parent based on the stat
 ##### Input Bitmask
 The input bitmask consists of an array of cells. Each cell can either be a 0, 1 or X (Don't care). This array is used by the parent to switch to the next state. For example, let a machine be in state A, which will switch to state B if its input mask is of the form 1X0X. Now, if our current inputs were represented by 1100, 1101, 1001 or 1000, then we would switch to state B. To implement the X symbol, we use 2 binary bitmasks. These are named bitmask1 and bitmask0. All the X are replaced by 1 in bitmask1 and by 0 in bitmask0. Then in order to check for equality between our input and the input mask, we use the formula : `(AB + A'C')'` , where
 - A represents the inputs as a binary bitmask
-- B is bitmask1 and'
+- B is bitmask1 and
 - C is bitmask0.
 In the example given above, 1X0X is represented by
 - bitmask1 = 1101 and
