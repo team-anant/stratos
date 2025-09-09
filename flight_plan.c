@@ -54,7 +54,7 @@ state *next_state;
 // add a row to the state table for a particular state
 int add_row(row *head, uint8_t bitmask1, uint8_t bitmask0, int group_no, int row_no,
             state *next_state) {
-        static int index;
+        // static int index;
         head[row_no].bitmask1[group_no] = bitmask1;
         head[row_no].bitmask0[group_no] = bitmask0;
         head[row_no].next_state = next_state;
@@ -72,7 +72,7 @@ int init_modes() {
 
 int compare_input_mask(uint8_t inputmask[], row row) {
         for (int i = 0; i < NO_OF_GROUPS; i++) {
-                if (~((inputmask[i] & row.bitmask1[i]) | (~inputmask[i] & ~row.bitmask0[i]))) {
+                if (~((uint8_t)(inputmask[i] & row.bitmask1[i]) | (uint8_t)(~inputmask[i] & ~row.bitmask0[i]))) {
                         return 0;
                 }
         }
@@ -82,7 +82,7 @@ int compare_input_mask(uint8_t inputmask[], row row) {
 // if A: input
 //    B: bitmask1
 //    C: bitmask0
-//    then A'BC + A'B'C' = 0 will give the next state to go to
+//    then (AB + A'C')' = 0 will give the next state to go to
 void sigstophandler(int signo, siginfo_t *info, void *context) {
         if (signo == SIGTSTP) {
                         flag = 1;
@@ -287,6 +287,9 @@ int main() {
                 init_modes();
                 int status;
                 struct sigaction act;
+                sigset_t mask;
+                sigemptyset(&mask);
+                act.sa_mask = mask;
                 act.sa_sigaction = sigusrhandler;
                 act.sa_flags = SA_SIGINFO;
                 if (sigaction(SIGUSR1, &act, NULL) < 0) {
@@ -313,9 +316,7 @@ int main() {
                         current_state = (next_state = &rotate_state);
                 }
                 kill(spi_id, SIGCONT);
-                sigset_t mask;
-                sigemptyset(&mask);
-                sigaddset(&mask, SIGCLD);
+                
                 for (;;) {
                         pause();
                 }
