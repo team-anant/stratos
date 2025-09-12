@@ -5,7 +5,10 @@
 
 typedef struct {
     pid_t pid;
+    std::string path;
 } state;
+
+// create sigusrhandler
 
 std::unordered_map<int, state> stateMap;
 
@@ -34,36 +37,51 @@ std::unordered_map<int, state> stateMap;
 
 // }
 
-class FlightPlan {        
+class FlightPlan {
+    private:
+        void main();        
     public:
         FlightPlan(std::string pathToFlightPlan);
         ~FlightPlan();
 };
 
 FlightPlan::FlightPlan(std::string pathToFlightPlan) {
-    /*
-        open the yaml file with stateno. to state (path to states) mappings,
-        go through each path, fork and exec that path. in the parent process, 
-        add the state and the corresponding pid struct to the stateMap
-    */
 
     std::unordered_map<int, std::string> pathMap;
 
-    // pathMap = parseConfig("/.config.yml")
+    // pathMap = parseConfig("/.config.yml") // should return a dict with state identifier: path to state
     int noOfStates = 2;
     pathMap[0] = "/states/rotatory.cpp";
     pathMap[1] = "/states/stationary.cpp";
 
     // for loop to create each state 
     for(auto it = pathMap.begin(); it != pathMap.end(); ++it) {
-        int pid = fork();
+        pid_t pid = fork();
+        if(pid==0) { // child
+            // copy the string to a path because kill needs a const path
+            // swap std::string with const char* in pathMap to remove this for loop and straight up do exec.
+            char path[it->second.size()];
+            for(int i=0; i<it->second.size(); i++) {
+                path[i] = it->second[i];
+            }
+            const char* real_path = path;
+            if(!execv(real_path, NULL)) {
+                kill(getppid(), SIGINT);
+            }
+            
+        } else { // add error handling
+            pause();
+            state st = {pid, it->second};
+            stateMap[it->first] = st;
+        }
     }
+    main();
 }
 
 FlightPlan::~FlightPlan() {
     // add code for memory cleanup 
 }
 
-int main() {
-    FlightPlan fp = FlightPlan("state_table.csv");
+void FlightPlan::main() {
+    // write the main code that runs after initial setup
 }
