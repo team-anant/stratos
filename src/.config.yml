@@ -1,2 +1,2 @@
-0: "/states/rotate.cpp"
-1: "/states/stationary.cpp"
+noOfStates: 0
+states: {0: "/states/rotate.cpp", 1: "/states/stationary.cpp"}

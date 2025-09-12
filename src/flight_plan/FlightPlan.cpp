@@ -1,5 +1,6 @@
 #include "utilities.h"
 #include <unordered_map>
+#include <unistd.h>
 // #include "yaml-cpp/yaml.h"
 
 typedef struct {
@@ -49,11 +50,14 @@ FlightPlan::FlightPlan(std::string pathToFlightPlan) {
     std::unordered_map<int, std::string> pathMap;
 
     // pathMap = parseConfig("/.config.yml")
+    int noOfStates = 2;
     pathMap[0] = "/states/rotatory.cpp";
     pathMap[1] = "/states/stationary.cpp";
 
-    std::cout << pathMap[0000];
-
+    // for loop to create each state 
+    for(auto it = pathMap.begin(); it != pathMap.end(); ++it) {
+        int pid = fork();
+    }
 }
 
 FlightPlan::~FlightPlan() {
