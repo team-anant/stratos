@@ -9,6 +9,12 @@ typedef struct {
 } state;
 
 // create sigusrhandler
+void sigusrhandler(int sig_num, siginfo_t *info, void *context) {
+    uint32_t sigv = info->si_value.sival_int;
+    // figure out next state 
+    // kill(current_state.pid, SIGSTOP)
+    // kill(next_state.pid, SIGCONT)
+}
 
 std::unordered_map<int, state> stateMap;
 
@@ -42,6 +48,9 @@ class FlightPlan {
         void main();        
     public:
         FlightPlan(std::string pathToFlightPlan);
+
+        state current_state;
+
         ~FlightPlan();
 };
 
@@ -67,7 +76,7 @@ FlightPlan::FlightPlan(std::string pathToFlightPlan) {
             const char* real_path = path;
             if(!execv(real_path, NULL)) {
                 kill(getppid(), SIGINT);
-            }
+	    }
             
         } else { // add error handling
             pause();
@@ -84,4 +93,7 @@ FlightPlan::~FlightPlan() {
 
 void FlightPlan::main() {
     // write the main code that runs after initial setup
+    while(1) {
+	    pause();
+    }
 }

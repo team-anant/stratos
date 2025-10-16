@@ -6,4 +6,4 @@ class state {
         virtual ~state() {}
 };
 
-class rotate;
+// note: after being initialised the state must stop and wait for SIGCONT 

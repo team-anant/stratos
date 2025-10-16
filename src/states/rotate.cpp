@@ -4,10 +4,14 @@
 class rotate : public state {
     void init() {
         // do init for rotate state
-        return;
+        raise(SIGSTOP);
+        action();
     }
     void action() {
         // what will the state constantly be doing
+        while(1) {
+            // rotate
+        }
         return;
     }
 };
