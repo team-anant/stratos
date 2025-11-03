@@ -1,19 +1,34 @@
-#include <unistd.h>
+#ifndef READER_H
+#define READER_H
+
+#include <vector>
 #include <signal.h>
-#include <bits/std++.h>
+#include <unistd.h>
 
 class reader {
-    public:
-        virtual void init() = 0;
-        virtual void action() = 0;
+public:
+    static std::vector<pid_t> subscribers;
 
+    virtual void init() = 0;
+    virtual void action() = 0;
 
-        void sigusrhandler(int signo, siginfo_t *info, void *context) {
-        }
+    virtual void sigusrhandler(int signo, siginfo_t *info, void *context) {}
 
-	// there will also be handlers for graceful stop 
-	
-	// create a reader helper function that sends the signals to all subscribed processes
+    static void notifyAll(int signo = SIGUSR1) {
+        for (pid_t pid : subscribers)
+            kill(pid, signo);
+    }
 
-        virtual ~reader() {}
+    virtual ~reader() {}
+
+protected:
+    static void handlerDispatch(int signo, siginfo_t *info, void *context) {
+        if (instance)
+            instance->sigusrhandler(signo, info, context);
+    }
+
+    static inline reader* instance = nullptr;
 };
+
+
+#endif 

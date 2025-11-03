@@ -1,10 +1,9 @@
+#include <csignal> 
+#include <stdio.h>
+#include <iostream>
+#include <vectors>
+
+class temperature_read(){
 
 
-float get_temperature() {
-    // placeholder code to get temp
-
-}
-
-int main() {
-    return 0;
 }
