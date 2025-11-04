@@ -1,22 +1,40 @@
-#include <bits/stdc++.h>
-#include "state.h"
+#include <iostream>
+#include <csignal>
+#include <unistd.h>
+#include "State.h"
 
-class rotate : public state {
-    void init() {
-        // do init for rotate state
-        raise(SIGSTOP);
-        action();
+class Rotate : public State {
+private:
+    static volatile sig_atomic_t paused;
+
+    static void handle_pause(int signo) {
+        paused = 1;
     }
-    void action() {
-        // what will the state constantly be doing
-        while(1) {
-            // rotate
+
+    static void handle_resume(int signo) {
+        paused = 0;
+    }
+
+public:
+    void init() override {
+        signal(SIGUSR1, handle_pause);
+        signal(SIGUSR2, handle_resume);
+    }
+
+    void run() override {
+        while (true) {
+            if (!paused) {
+                void action();
+                sleep(1);
+            } else {
+                pause();  
+            }
         }
-        return;
     }
+
+    void pause() override {
+        paused = 1;
+    }
+
 };
 
-int main() {
-    
-    return 0;
-}
