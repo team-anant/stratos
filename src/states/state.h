@@ -14,19 +14,12 @@ protected:
         paused = 1;
     }
 
-    static void handle_resume(int signo) {
-        paused = 0;
-    }
-
 public:
     virtual void init() {
         signal(SIGUSR1, handle_pause);
-        signal(SIGUSR2, handle_resume);
     }
 
     virtual void run() ;
-
-    virtual void pause();
 
     virtual ~State() {}
 };
