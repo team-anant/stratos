@@ -63,7 +63,7 @@ Here input bit index 0 is the mask `0x80` and index 1 is the mask `0x40` — inp
 
 #### Mode switching
 ---
-Mode switching occurs when a reader sends a signal to the parent (along with the changes in the inputs). The signal API of the Linux Kernel allows us to send a maximum of 32 bits of information. Sending the input bitmask itself through this API does not scale for two reasons: expressing a bitmask with don't-care positions needs **two** bits per cell (one to say whether the cell is significant, one to say what it must be), so a single message can carry at most 16 cells; and that single message would have to describe the *entire* mask, which caps the whole input mask at 16 bits no matter how many readers exist. The number of inputs we need to watch is not bounded by 16.
+Mode switching occurs when a reader sends a signal to the parent (along with the changes in the inputs). The signal API of the Linux Kernel allows us to send a maximum of 32 bits of information.
 
 The mechanism used instead divides the 32 bits into two halves that are read in parallel rather than as a mask plus an index:
 
@@ -87,13 +87,7 @@ The position within these halves is what selects the scope entry, so the j-th bi
         inputs[scope[j] / 8] : clear 0x80 >> (scope[j] % 8)
                                then set it if the change bit is 1
 ```
-
-Two consequences are worth stating explicitly, because they are easy to get wrong:
-
-- **A message assigns every bit named in `care`, including writing 0.** It is not an OR of the set bits. A payload of `0xFFFF8000` with `scope = {0, 1}` sets input bit 0 *and clears* input bit 1.
 - **Bits not named in `care` are untouched.** A payload of `0x80008000` writes only `scope[0]`, leaving `scope[1]` at whatever value it already held.
-
-`MAX_AFFECTED_BITS` is 16 because the payload is split in half: each scope entry costs one `care` bit and one `change` bit. That bounds how many entries a *single message* can address. It does **not** bound the input mask: each reader declares only the bits it owns, so the mask grows with the number of readers even though every message still carries 16 entries. With the current `MAX_INPUT_FIELDS` the mask is a single 8-bit word, so this ceiling is not yet reached.
 
 As a concrete example, the mock reader declares `scope_len = 2`, `scope = {0, 1}`, and sends:
 
@@ -214,8 +208,6 @@ make        # produces ./stratos
 make clean  # removes ./stratos and build/
 ```
 
-The build uses `gcc -Wall -Wextra -Werror`, so warnings fail the build. `build/` and the `stratos` binary are git-ignored.
-
 The parent has no input of its own, so at least one reader must be running. To exercise the state machine with the mock reader:
 
 ```bash
@@ -245,16 +237,14 @@ Stationarying     <- after `echo 0`
 Stationarying
 ```
 
-> State actors inherit the parent's stdout, so when redirecting to a file the output is block-buffered and may not appear until exit. Use `stdbuf -o0 ./stratos` when redirecting.
-
 ---
 
 ### To-do
 
 **Race between delivery order and intent order.**
-Signals from a single reader arrive in the order they were sent, and the parent's handler is not re-entered while it runs (`SIGUSR1` is blocked for the duration of its own handler, since `SA_NODEFER` is not set). What is *not* preserved is the order of **intent**: if two readers report changes that were observed at the same instant, the two messages are delivered in an arbitrary order. The parent therefore evaluates the state table once per message, transiently seeing an input mask that never corresponded to a real system state, and a transition taken on that intermediate mask is neither reconsidered nor undone when the second message arrives. A reader's own two consecutive reports can be interleaved with another reader's report in the same way.
+Signals from a single reader arrive in the order they were sent, and the parent's handler is not re-entered while it runs (`SIGUSR1` is blocked for the duration of its own handler, since `SA_NODEFER` is not set). What is *not* preserved is the order of **intent**: if two readers report changes that were observed at different instances, the two messages are delivered in the order they report, not the order they observe.
 
-This is compounded by signal coalescing: `SIGUSR1` is a *standard* signal, so pending instances are not queued. If a reader signals twice while the parent is inside its handler, only one instance remains pending and the other payload is discarded — an input change can be lost outright, not merely reordered. Using per-reader real-time signals (`SIGRTMIN + n`, which do queue) or carrying a sequence number in the payload would address both problems.
+This is compounded by signal coalescing: `SIGUSR1` is a *standard* signal, so pending instances are not queued. If a reader signals twice while the parent is inside its handler, only one instance remains pending and the other payload is discarded — an input change can be lost outright, not merely reordered. 
 
 Other outstanding work:
 
